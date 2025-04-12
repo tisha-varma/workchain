@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">Welcome to BlockFreelance</h1>
+        <p class="lead">A decentralized platform for freelancers and clients, powered by blockchain technology.</p>
+        <p>BlockFreelance ensures secure payments, transparent contracts, and verified work history - all on the blockchain.</p>
+        
+        <div class="mt-4">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary me-2">Register</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Latest Tasks</h5>
+            </div>
+            <div class="card-body">
+                {% if tasks %}
+                    <ul class="list-group list-group-flush">
+                        {% for task in tasks[:5] %}
+                            <li class="list-group-item">
+                                <a href="{{ url_for('view_task', task_id=task.id) }}">{{ task.title }}</a>
+                                <span class="badge bg-primary float-end">${{ task.price }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary mt-3">View All Tasks</a>
+                {% else %}
+                    <p class="text-muted">No tasks available at the moment</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,66 @@
+<!-- templates/register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Register - BlockFreelance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Register</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_freelancer" name="is_freelancer">
+                            <label class="form-check-label" for="is_freelancer">
+                                Register as Freelancer
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="skills_div" style="display: none;">
+                        <label for="skills" class="form-label">Skills (comma separated)</label>
+                        <input type="text" class="form-control" id="skills" name="skills">
+                    </div>
+                    <div class="mb-3">
+                        <label for="wallet_address" class="form-label">Ethereum Wallet Address</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="wallet_address" name="wallet_address" required>
+                            <button type="button" class="btn btn-primary" id="connect_button" onclick="connectWallet()">Connect Wallet</button>
+                        </div>
+                        <small class="text-muted">Connect your MetaMask wallet to receive payments</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Show/hide skills field based on freelancer checkbox
+    document.getElementById('is_freelancer').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('skills_div').style.display = 'block';
+        } else {
+            document.getElementById('skills_div').style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}>

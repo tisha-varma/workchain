@@ -1,0 +1,136 @@
+
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - BlockFreelance{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="mb-3">{{ task.title }}</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Task Details</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ task.description }}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Price:</strong> ${{ task.price }}</p>
+                        <p><strong>Status:</strong> <span class="badge {% if task.status == 'open' %}bg-primary{% elif task.status == 'in_progress' %}bg-warning{% elif task.status == 'completed' %}bg-success{% endif %}">{{ task.status.replace('_', ' ').title() }}</span></p>
+                        <p><strong>Created:</strong> {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Client:</strong> {{ task.client.username }}</p>
+                        {% if task.freelancer %}
+                        <p><strong>Freelancer:</strong> {{ task.freelancer.username }}</p>
+                        {% endif %}
+                        <p><strong>Deadline:</strong> {{ task.deadline.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </div>
+                
+                {% if task.contract_address %}
+                <hr>
+                <div class="blockchain-info">
+                    <p><strong>Smart Contract Address:</strong> <small>{{ task.contract_address }}</small></p>
+                    {% if task.blockchain_tx_id %}
+                    <p><strong>Payment Transaction:</strong> <small>{{ task.blockchain_tx_id }}</small></p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.id == task.client_id %}
+                        {% if task.status == 'open' %}
+                            {% if not task.contract_address %}
+                            <form action="{{ url_for('deploy_contract', task_id=task.id) }}" method="POST">
+                                <button type="submit" class="btn btn-primary">Deploy Smart Contract</button>
+                            </form>
+                            {% endif %}
+                        {% elif task.status == 'completed' %}
+                            <form action="{{ url_for('release_payment', task_id=task.id) }}" method="POST">
+                                <button type="submit" class="btn btn-success">Release Payment</button>
+                            </form>
+                        {% endif %}
+                    {% elif current_user.is_freelancer and task.status == 'open' and not task.freelancer_id %}
+                        <form action="{{ url_for('accept_task', task_id=task.id) }}" method="POST">
+                            <button type="submit" class="btn btn-primary">Accept Task</button>
+                        </form>
+                    {% elif current_user.id == task.freelancer_id and task.status == 'in_progress' %}
+                        <form action="{{ url_for('complete_task', task_id=task.id) }}" method="POST">
+                            <button type="submit" class="btn btn-success">Mark as Completed</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if task.status == 'completed' and task.blockchain_tx_id %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Leave a Review</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('submit_review', task_id=task.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating1" value="1" required>
+                                <label class="form-check-label" for="rating1">1</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating2" value="2">
+                                <label class="form-check-label" for="rating2">2</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating3" value="3">
+                                <label class="form-check-label" for="rating3">3</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating4" value="4">
+                                <label class="form-check-label" for="rating4">4</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="rating" id="rating5" value="5">
+                                <label class="form-check-label" for="rating5">5</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Blockchain History</h5>
+            </div>
+            <div class="card-body">
+                {% if blockchain_history %}
+                <ul class="list-group list-group-flush">
+                    {% for tx in blockchain_history %}
+                    <li class="list-group-item">
+                        <h6 class="mb-1">{{ tx.transaction.type.replace('_', ' ').title() }}</h6>
+                        <p class="mb-1"><small>Block #{{ tx.block_index }}</small></p>
+                        <p class="mb-1"><small>{{ tx.transaction.timestamp|timestamp_to_datetime }}</small></p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No blockchain history available for this task.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
